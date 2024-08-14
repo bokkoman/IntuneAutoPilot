@@ -49,6 +49,6 @@ Create SCCM/MDT task sequence and run script during Specialize pass in the autou
 
 Boot installer. Windows should install and run the script to upload the device to AutoPilot.
 
-If device is already registered into Intune with a grouptag, the script will prompt you and you can choose a different one. (you can edit this section in the powershell script.)
+If device is already registered into Intune with a grouptag, the script will prompt you and you can choose a different one. (you can edit this section in the powershell script; https://github.com/bokkoman/IntuneAutoPilot/blob/b9a1c48988e9bb1bccc7bb036838b184904d1ed3/WindowsAutoPilotInfo.ps1#L498)
 
 You will be presented with the AutoPilot enrollment screen when finished.
