@@ -9,17 +9,29 @@ Prerequisites:
 1. An AzureAD App Registration
 2. Windows USB installation.
 
+
 Steps:
+
 Create an App.
+
 Add the following API permissions:
+
 Microsoft Graph -> Application Permissions ->
+
     DeviceManagementConfiguration.ReadWrite.All
     DeviceManagementManagedDevices.ReadWrite.All 
     DeviceManagementServiceConfig.ReadWrite.All
+    
 Grant admin consent for permissions
+
 Create a client secret (copy this).
+
 Copy the client ID and Tenant ID and Secret values, and paste to "Settings.ps1" under corresponding variables
+
 Copy contents to root of Windows Installer USB drive. 
+
 Create SCCM/MDT task sequence and run script during Specialize pass (autunattend.xml)
+
 Boot installer. Windows should install and run the script to upload the device to AutoPilot.
+
 You will be presented with the AutoPilot enrollment screen when finished.
