@@ -35,7 +35,7 @@ Copy the client ID and Tenant ID and Secret values, and paste to "Settings.ps1" 
 
 Copy contents to root of Windows Installer USB drive. 
 
-Create SCCM/MDT task sequence and run script during Specialize pass in the autounattend.xml (see example fo the specialize secetion below or the autunattend.xml in this repo)
+Create SCCM/MDT task sequence and run script during Specialize pass in the autounattend.xml (see example fo the specialize secetion below or the autunattend.xml in this repo, can also use https://schneegans.de/windows/unattend-generator to generate one)
 
     <component name="Microsoft-Windows-Deployment" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
         <RunSynchronous>
