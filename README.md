@@ -8,11 +8,16 @@ This ensures the script works prior to booting into OOBE and makes it work as a 
 Prerequisites:
 1. An AzureAD App Registration
 2. Windows USB installation.
+3. Exported Wifi profile (optional)
 
 
 Steps:
 
-Create an App.
+Create Windows USB installation.
+
+Optional; export wifi profile.
+
+Create an App Registration in Azure.
 
 Add the following API permissions:
 
