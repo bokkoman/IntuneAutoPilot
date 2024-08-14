@@ -35,7 +35,17 @@ Copy the client ID and Tenant ID and Secret values, and paste to "Settings.ps1" 
 
 Copy contents to root of Windows Installer USB drive. 
 
-Create SCCM/MDT task sequence and run script during Specialize pass (autunattend.xml)
+Create SCCM/MDT task sequence and run script during Specialize pass in the autounattend.xml (see example fo the specialize secetion below or the autunattend.xml in this repo)
+
+    <component name="Microsoft-Windows-Deployment" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <RunSynchronous>
+          <RunSynchronousCommand wcm:action="add">
+            <Order>1</Order>
+            <Path>cmd /q /c "FOR %i IN (C D E F G H I J K L N M O P Q R S T U V W X Y Z) DO IF EXIST %i:\WindowsAutoPilotInfo.ps1 powershell -ExecutionPolicy Bypass -File %i:\WindowsAutoPilotInfo.ps1 -Settings %i:Settings.ps1"</Path>
+            <Description>Run AutoPilot script</Description>
+          </RunSynchronousCommand>
+        </RunSynchronous>
+    </component>
 
 Boot installer. Windows should install and run the script to upload the device to AutoPilot.
 
