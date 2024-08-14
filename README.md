@@ -1,4 +1,4 @@
-This script is for importing your laptop (or other Windows Devices) into Intune Autopilot.
+This script is for importing your device (laptop, pc) hash/serial into Intune Autopilot during Windows Installation. Useful for new hardware or reinstallation of older devices.
 It relies on active internet connection.
 
 I rescripted the Get-WindowsAutoPilotInfo script (https://www.powershellgallery.com/packages/Get-WindowsAutoPilotInfo) so it does not need Nuget and MsGraph modules. It works with Invoke-Webrequests instead.
