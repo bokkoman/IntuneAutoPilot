@@ -1,0 +1,157 @@
+blueprint:
+  name: GoodWe export-limiter naar doelwaarde met hysterese (P1 + HomeWizard)
+  description: >
+    Regelt de GoodWe exportlimiet zodat ~target W naar het net wordt teruggeleverd,
+    met hysterese om fladderen te voorkomen. Werkt met HomeWizard P1 (netvermogen)
+    en een GoodWe "number" entiteit voor exportlimiet (0–4200 W).
+  domain: automation
+  input:
+    p1_power_entity:
+      name: P1 netvermogen sensor
+      description: Sensor met actueel netvermogen (W). Bij P1 is export meestal negatief.
+      selector:
+        entity:
+          domain: sensor
+    goodwe_limit_entity:
+      name: GoodWe exportlimiet (number)
+      description: Number-entiteit waarmee je de exportlimiet (W) zet.
+      selector:
+        entity:
+          domain: number
+    target_export_w:
+      name: Doelwaarde export (W)
+      default: 250
+      selector:
+        number:
+          min: 0
+          max: 6000
+          step: 50
+          unit_of_measurement: W
+          mode: box
+    hysteresis_w:
+      name: Hysterese (±W)
+      description: Pas de limiet pas aan als de afwijking groter is dan deze waarde.
+      default: 100
+      selector:
+        number:
+          min: 50
+          max: 1000
+          step: 10
+          unit_of_measurement: W
+          mode: box
+    step_w:
+      name: Stapgrootte (W)
+      description: Grootte van elke aanpassing van de exportlimiet.
+      default: 100
+      selector:
+        number:
+          min: 20
+          max: 1000
+          step: 10
+          unit_of_measurement: W
+          mode: box
+    min_limit_w:
+      name: Minimum exportlimiet (W)
+      default: 0
+      selector:
+        number:
+          min: 0
+          max: 4200
+          step: 50
+          unit_of_measurement: W
+          mode: box
+    max_limit_w:
+      name: Maximum exportlimiet (W)
+      default: 4200
+      selector:
+        number:
+          min: 0
+          max: 10000
+          step: 50
+          unit_of_measurement: W
+          mode: box
+    invert_p1_sign:
+      name: P1-teken omkeren (export is negatief)
+      description: Laat aan staan wanneer je P1 export negatief is (standaard bij HomeWizard P1).
+      default: true
+      selector:
+        boolean: {}
+    sample_seconds:
+      name: Update-interval (seconden)
+      default: 5
+      selector:
+        number:
+          min: 5
+          max: 120
+          step: 5
+          unit_of_measurement: s
+          mode: slider
+    enable_helper:
+      name: (Optioneel) schakelaar om regeling te activeren
+      default:
+      selector:
+        entity:
+          domain: input_boolean
+          multiple: false
+
+mode: single
+max_exceeded: silent
+
+variables:
+  p1_entity: !input p1_power_entity
+  limit_entity: !input goodwe_limit_entity
+  target_w: !input target_export_w
+  hyst_w: !input hysteresis_w
+  step_w: !input step_w
+  min_w: !input min_limit_w
+  max_w: !input max_limit_w
+  invert: !input invert_p1_sign
+
+  # Huidige metingen/staten
+  p1_raw: "{{ states(p1_entity) | float(0) }}"
+  # Maak export positief in W; import wordt 0
+  export_now: >
+    {% set v = (invert | iif(-1,1)) * p1_raw %}
+    {{ [v, 0] | max }}
+  limit_now: "{{ states(limit_entity) | float(0) }}"
+  error_w: "{{ target_w - export_now }}"
+  need_adjust: "{{ (error_w | abs) > hyst_w }}"
+  direction: "{{ 1 if error_w > 0 else -1 }}"
+  proposed_limit: >
+    {% set adjust = [step_w, (error_w | abs)] | min * direction %}
+    {{ (limit_now + adjust) | float }}
+  clamped_limit: >
+    {% if proposed_limit < min_w %} {{ min_w }}
+    {% elif proposed_limit > max_w %} {{ max_w }}
+    {% else %} {{ proposed_limit }}
+    {% endif %}
+
+trigger:
+  - platform: time_pattern
+    seconds: "/10"
+
+condition:
+  - condition: template
+    value_template: "{{ states(p1_entity) not in ['unknown','unavailable','none'] }}"
+  - condition: template
+    value_template: "{{ states(limit_entity) not in ['unknown','unavailable','none'] }}"
+  - condition: template
+    value_template: >
+      {% if not enable_helper %}
+        true
+      {% else %}
+        {{ is_state(enable_helper, 'on') }}
+      {% endif %}
+
+action:
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ need_adjust }}"
+        sequence:
+          - service: number.set_value
+            target:
+              entity_id: "{{ limit_entity }}"
+            data:
+              value: "{{ clamped_limit }}"
+    default: []
